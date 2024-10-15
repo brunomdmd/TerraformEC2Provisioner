@@ -25,7 +25,7 @@ module "vpc" {
 
 module "security_group" {
   source      = "../../modules/security_group"
-  my_ip       = ["200.153.155.172/32"]
+  my_ip       = ["XXX.XXX.XX.XX/32"]
   vpc_id = module.vpc.vpc_id
   environment = var.environment
 }
