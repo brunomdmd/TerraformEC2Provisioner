@@ -1,12 +1,12 @@
 variable "environment" {
-  default     = "Staging"
   type        = string
 }
 
-variable "my_ip" {
-  type        = list(string)
+variable "vpc_id" {
+  type        = string
 }
 
-variable "vpc_id" {
+
+variable "cidr_ipv4" {
   type        = string
 }

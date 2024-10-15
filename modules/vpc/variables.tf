@@ -11,11 +11,9 @@ variable "private_subnet_cidr" {
 }
 
 variable "az" {
-  default     = "us-east-1b"
   type        = string
 }
 
 variable "environment" {
-  default     = "Staging"
   type        = string
 }

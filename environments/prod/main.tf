@@ -25,8 +25,8 @@ module "vpc" {
 
 module "security_group" {
   source      = "../../modules/security_group"
-  my_ip       = ["XXX.XXX.XX.XX/32"]
   vpc_id = module.vpc.vpc_id
+  cidr_ipv4 = module.vpc.aws_vpc_cidr_block
   environment = var.environment
 }
 
@@ -39,7 +39,7 @@ module "key_pair" {
 module "ec2" {
   source            = "../../modules/ec2"
   ami_id            = "ami-06b21ccaeff8cd686"
-  instance_count    = 6
+  instance_count    = 3
   instance_type     = "t2.micro"
   key_name          = "prod-key.pub"
   subnet_id         = module.vpc.subnet_public_id

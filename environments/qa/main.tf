@@ -25,8 +25,8 @@ module "vpc" {
 
 module "security_group" {
   source      = "../../modules/security_group"
-  my_ip       = ["XXX.XXX.XX.XX/32"]
   vpc_id = module.vpc.vpc_id
+  cidr_ipv4 = module.vpc.aws_vpc_cidr_block
   environment = var.environment
 }
 
