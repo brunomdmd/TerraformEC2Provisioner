@@ -6,7 +6,7 @@ provider "aws" {
 # State file
 terraform {
   backend "s3" {
-    bucket  = "terraform-bmd"
+    bucket  = "bucket-s3" #Mudar para o seu bucket
     key     = "terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
@@ -39,7 +39,7 @@ module "key_pair" {
 module "ec2" {
   source            = "../../modules/ec2"
   ami_id            = "ami-06b21ccaeff8cd686"
-  instance_count    = 3
+  instance_count    = 2
   instance_type     = "t2.micro"
   key_name          = "prod-key.pub"
   subnet_id         = module.vpc.subnet_public_id
