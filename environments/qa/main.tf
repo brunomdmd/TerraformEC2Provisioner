@@ -6,7 +6,7 @@ provider "aws" {
 # State file
 terraform {
   backend "s3" {
-    bucket  = "bucket-s3" #Mudar para o seu bucket
+    bucket  = "terraform-bmd" #Mudar para o seu bucket
     key     = "terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
