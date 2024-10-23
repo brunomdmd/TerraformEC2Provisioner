@@ -11,7 +11,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   
 jobs:
-  terraform:
+  Terraform CI/CD:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
@@ -26,6 +26,10 @@ jobs:
         working-directory: environments/qa
         run: terraform init -upgrade
 
+      - name: Terraform Validate
+        working-directory: environments/qa      
+        run: terraform validate        
+
       - name: Terraform Plan
         working-directory: environments/qa
         run: terraform plan
@@ -33,10 +37,6 @@ jobs:
       - name: Terraform Apply
         working-directory: environments/qa
         run: terraform apply -auto-approve
-
-      - name: Terraform Validate
-        working-directory: environments/qa      
-        run: terraform validate
 
       - name: Terraform Destroy
         working-directory: environments/qa      
