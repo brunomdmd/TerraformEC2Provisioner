@@ -38,6 +38,6 @@ jobs:
         working-directory: environments/qa
         run: terraform apply -auto-approve
 
-    # - name: Terraform Destroy
-    #   working-directory: environments/qa      
-    #   run: terraform destroy -auto-approve        
+      - name: Terraform Destroy
+        working-directory: environments/qa      
+        run: terraform destroy -auto-approve        
