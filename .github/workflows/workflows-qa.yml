@@ -23,21 +23,21 @@ jobs:
           terraform_version: 1.4.6
 
       - name: Terraform Init
-        working-directory: ./environment/qa
+        working-directory: environment/qa
         run: terraform init
 
       - name: Terraform Plan
-        working-directory: ./environment/qa
+        working-directory: environment/qa
         run: terraform plan
 
       - name: Terraform Apply
-        working-directory: ./environment/qa
+        working-directory: environment/qa
         run: terraform apply -auto-approve
 
       - name: Terraform Validate
-        working-directory: ./environment/qa      
+        working-directory: environment/qa      
         run: terraform validate
 
       - name: Terraform Destroy
-        working-directory: ./environment/qa      
+        working-directory: environment/qa      
         run: terraform destroy -auto-approve        
