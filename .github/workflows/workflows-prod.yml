@@ -1,4 +1,4 @@
-name: TerraformEC2Provisioner
+name: TerraformEC2Provisioner - PROD
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: environments/prod
-        run: terraform init
+        run: terraform init -upgrade
 
       - name: Terraform Plan
         working-directory: environments/prod

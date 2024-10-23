@@ -1,4 +1,4 @@
-name: TerraformEC2Provisioner
+name: TerraformEC2Provisioner - QA
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: environments/qa
-        run: terraform init
+        run: terraform init -upgrade
 
       - name: Terraform Plan
         working-directory: environments/qa
