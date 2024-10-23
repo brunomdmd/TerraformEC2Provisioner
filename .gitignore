@@ -42,5 +42,5 @@ override.tf.json
 terraform.rc
 
 
-*.pub
-*.pem
+#*.pub
+#*.pem
