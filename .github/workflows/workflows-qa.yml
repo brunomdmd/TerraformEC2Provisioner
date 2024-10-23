@@ -11,7 +11,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   
 jobs:
-  Terraform CI/CD:
+  Terraform_CI_CD:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
