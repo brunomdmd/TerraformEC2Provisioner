@@ -34,8 +34,8 @@ module "security_group" {
 module "ec2" {
   source            = "../../modules/ec2"
   ami_id            = "ami-06b21ccaeff8cd686"
-  instance_count    = 1
-  instance_type     = "t2.nano"
+  instance_count    = 2
+  instance_type     = "t2.micro"
   key_name          = "QA-KEY"
   subnet_id         = module.vpc.subnet_public_id
   security_group_id = [module.security_group.security_group_id]
