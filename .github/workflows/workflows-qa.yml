@@ -1,0 +1,43 @@
+name: TerraformEC2Provisioner
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+env:
+  TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+
+      - name: Terraform Init
+        working-directory: ./environment/qa
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ./environment/qa
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: ./environment/qa
+        run: terraform apply -auto-approve
+
+      - name: Terraform Validate
+        working-directory: ./environment/qa      
+        run: terraform validate
+
+      - name: Terraform Destroy
+        working-directory: ./environment/qa      
+        run: terraform destroy -auto-approve        

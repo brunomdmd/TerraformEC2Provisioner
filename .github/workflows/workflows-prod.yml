@@ -20,19 +20,24 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.9.7  # Substitua pela versão desejada
+          terraform_version: 1.4.6
 
       - name: Terraform Init
+        working-directory: ./environment/prod
         run: terraform init
 
       - name: Terraform Plan
+        working-directory: ./environment/prod
         run: terraform plan
 
       - name: Terraform Apply
+        working-directory: ./environment/prod
         run: terraform apply -auto-approve
 
       - name: Terraform Validate
+        working-directory: ./environment/prod      
         run: terraform validate
 
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+        working-directory: ./environment/prod      
+        run: terraform destroy -auto-approve        
