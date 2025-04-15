@@ -22,16 +22,16 @@ Esse projeto faz parte de um processo de aprendizagem que estou me subimentendo 
 ## Utilização
 - Navegar até a pasta do ambiente que queria subir (PROD ou QA)
 - Iniciar o terraform
-``sh
+``
 terraform init
 ``
 
 - Planejar o terraform
-``sh
+``
 terraform plan -out=plano
 ``
 
 - Aplicar o terraform
-``sh
+``
  terraform apply "plano"
 ``
