@@ -1,26 +1,11 @@
-resource "aws_security_group" "allow_ssh_http" {
-  name        = "SG-ALLOW_SSH_HTTP-${var.environment}"
+resource "aws_security_group" "sg_default" {
+  name        = "SG-DEFAULT-${var.environment}"
   vpc_id      = var.vpc_id
-  description = "Allow traffic inbound SSH, HTTP and HTTPs and all outbound traffic"
-    tags = {
-        Name = "SG-ALLOW_SSH_HTTP-${var.environment}"
-        Ambiente = var.environment
-    } 
+  description = "Allow traffic inbound"
 
-  ingress {
-    description = "ALLOW-HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.cidr_ipv4]
-  }
-
-  ingress {
-    description = "ALLOW-HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.cidr_ipv4]
+  tags = {
+    Name     = "SG-${var.environment}"
+    Ambiente = var.environment
   }
 
   ingress {
@@ -28,7 +13,7 @@ resource "aws_security_group" "allow_ssh_http" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.cidr_ipv4]
+    cidr_blocks = [var.cidr_ipv4, var.myip]
   }
 
   egress {

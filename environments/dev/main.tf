@@ -9,8 +9,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket  = "terraform-awsstudybruno"
-    key     = "prod/terraform.tfstate"
+    bucket  = "terraformec2provisioner-bmd"
+    key     = "qa/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
   }
@@ -20,11 +20,26 @@ provider "aws" {
   region = "us-east-1"
 }
 
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 module "vpc" {
   source              = "../../modules/vpc"
-  block_cidr          = "10.0.0.0/16"
-  public_subnet_cidr  = "10.0.1.0/24"
-  private_subnet_cidr = "10.0.2.0/24"
+  block_cidr          = "172.16.0.0/16"
+  public_subnet_cidr  = "172.16.1.0/24"
+  private_subnet_cidr = "172.16.2.0/24"
   az                  = "us-east-1a"
   environment         = var.environment
 }
@@ -39,7 +54,7 @@ module "security_group" {
 
 module "ec2" {
   source            = "../../modules/ec2"
-  ami_id            = var.ami_id
+  ami_id            = data.aws_ami.amazon_linux_2023.id
   instance_count    = var.instance_count
   instance_type     = var.instance_type
   key_name          = var.key_name

@@ -1,0 +1,11 @@
+# Copie este arquivo para terraform.tfvars e preencha os valores
+# NUNCA commite terraform.tfvars no Git (já está no .gitignore)
+
+# Seu IP público em formato CIDR — obtenha em https://checkip.amazonaws.com
+myip = "SEU_IP_AQUI/32"
+
+# Opcional: sobrescreva os defaults abaixo apenas se necessário
+# environment    = "QA"
+# instance_count = 2
+# instance_type  = "t2.micro"
+# key_name       = "TERRAFORM-KEY"

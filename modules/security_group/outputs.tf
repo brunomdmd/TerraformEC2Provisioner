@@ -1,4 +1,4 @@
 output "security_group_id" {
-  value       = aws_security_group.allow_ssh_http.id
+  description = "ID do security group criado"
+  value       = aws_security_group.sg_default.id
 }
-
