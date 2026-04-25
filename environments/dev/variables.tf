@@ -10,6 +10,21 @@ variable "myip" {
   sensitive   = true
 }
 
+variable "os_type" {
+  description = "Escolha o SO das instâncias: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"
+  type        = string
+  validation {
+    condition = contains([
+      "AMAZON_LINUX_2023",
+      "UBUNTU_24_04",
+      "UBUNTU_22_04",
+      "WINDOWS_2022",
+      "WINDOWS_2019"
+    ], var.os_type)
+    error_message = "Os valores aceitos são: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"  
+  }
+}
+
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente DEV"
   type        = number
@@ -17,7 +32,7 @@ variable "instance_count" {
 }
 
 variable "instance_type" {
-  description = "Tipo da instância EC2 para QA (deve ser x86_64 para a AMI al2023)"
+  description = "Tipo da instância EC2 para DEV (deve ser x86_64 para a AMI al2023)"
   type        = string
   default     = "t3.micro"
 }

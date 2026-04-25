@@ -11,7 +11,7 @@ resource "aws_instance" "ec2" {
   }
 
   tags = {
-    Name     = "EC2-${var.environment}-${format("%03d", count.index + 1)}"
+    Name     = "${var.environment}-${var.os_type}-${format("%03d", count.index + 1)}"
     Ambiente = var.environment
   }
 }

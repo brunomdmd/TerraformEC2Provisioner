@@ -10,29 +10,47 @@ terraform {
 
   backend "s3" {
     bucket  = "terraformec2provisioner-bmd"
-    key     = "qa/terraform.tfstate"
+    key     = "dev/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
   }
 }
 
-provider "aws" {
-  region = "us-east-1"
+
+locals {
+  ami_filters = {
+    AMAZON_LINUX_2023 = {
+      name   = ["al2023-ami-*-x86_64"]
+      owner  = "amazon"
+    }
+    UBUNTU_24_04 = {
+      name   = ["ubuntu/images/hvm-ssd-gp3/ubuntu-*-24.04-amd64-server-*"]
+      owner  = "099720109477"
+    }
+    UBUNTU_22_04 = {
+      name   = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04-amd64-server-*"]
+      owner  = "099720109477"
+    }
+    WINDOWS_2022 = {
+      name   = ["Windows_Server-2022-English-Full-Base-*"]
+      owner  = "amazon"
+    }
+    WINDOWS_2019 = {
+      name   = ["Windows_Server-2019-English-Full-Base-*"]
+      owner  = "amazon"
+    }
+  }
 }
 
-data "aws_ami" "amazon_linux_2023" {
+data "aws_ami" "selected" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = [local.ami_filters[var.os_type].owner]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = local.ami_filters[var.os_type].name
   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
 }
 
 module "vpc" {
@@ -54,7 +72,8 @@ module "security_group" {
 
 module "ec2" {
   source            = "../../modules/ec2"
-  ami_id            = data.aws_ami.amazon_linux_2023.id
+  os_type           = var.os_type  
+  ami_id            = data.aws_ami.selected.id
   instance_count    = var.instance_count
   instance_type     = var.instance_type
   key_name          = var.key_name

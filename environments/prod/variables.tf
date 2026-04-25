@@ -1,12 +1,3 @@
-variable "ami_id" {
-  description = "ID da AMI a usar nas instâncias PROD (ex: ami-0abcdef1234567890). Consulte https://us-east-1.console.aws.amazon.com/ec2/home#AMICatalog"
-  type        = string
-  validation {
-    condition     = can(regex("^ami-[0-9a-f]{8,17}$", var.ami_id))
-    error_message = "O ami_id deve estar no formato ami-xxxxxxxxxxxxxxxxx."
-  }
-}
-
 variable "environment" {
   description = "Nome do ambiente"
   type        = string
@@ -17,6 +8,21 @@ variable "myip" {
   description = "Seu IP público em formato CIDR para acesso SSH e portas k8s (ex: 1.2.3.4/32)"
   type        = string
   sensitive   = true
+}
+
+variable "os_type" {
+  description = "Escolha o SO das instâncias: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"
+  type        = string
+  validation {
+    condition = contains([
+      "AMAZON_LINUX_2023",
+      "UBUNTU_24_04",
+      "UBUNTU_22_04",
+      "WINDOWS_2022",
+      "WINDOWS_2019"
+    ], var.os_type)
+    error_message = "Os valores aceitos são: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"  
+  }
 }
 
 variable "instance_count" {

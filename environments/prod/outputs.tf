@@ -1,19 +1,19 @@
 output "private_ip" {
   description = "IPs privados das instâncias EC2"
-  value       = aws_instance.ec2[*].private_ip
+  value       = module.ec2.private_ip
 }
 
 output "public_ip" {
   description = "IPs públicos das instâncias EC2"
-  value       = aws_instance.ec2[*].public_ip
+  value       = module.ec2.public_ip
 }
 
 output "instance_name" {
-  description = "Nome das instâncias EC2"
-  value       = aws_instance.ec2[*].tags["Name"]
+  description = "Nomes das instâncias EC2"
+  value       = module.ec2.instance_name
 }
 
 output "instance_ids" {
   description = "IDs das instâncias EC2"
-  value       = aws_instance.ec2[*].id
+  value       = module.ec2.instance_ids
 }

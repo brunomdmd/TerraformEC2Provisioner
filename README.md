@@ -31,7 +31,7 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 ### 2. Recursos AWS que precisam existir antes do deploy
 
 #### Bucket S3 — state remoto
-O Terraform salva o estado da infraestrutura em um bucket S3. Crie um bucket antes de rodar:
+O Terraform salva o [state file](https://developer.hashicorp.com/terraform/language/state) em um bucket S3. Crie um bucket antes de rodar:
 
 ```bash
 aws s3api create-bucket --bucket SEU_BUCKET --region us-east-1
@@ -79,10 +79,10 @@ cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
 
 ### Variáveis obrigatórias
 
-| Variável | Onde usar | Como obter |
+| Variável | Onde usar | Como obter / Valores aceitos |
 |---|---|---|
 | `myip` | DEV e PROD | Seu IP público: `curl https://checkip.amazonaws.com` — adicione `/32` no final (ex: `1.2.3.4/32`) |
-| `ami_id` | Apenas PROD | Console AWS → EC2 → AMI Catalog → filtre por *Amazon Linux 2023, x86_64, HVM* |
+| `os_type` | DEV e PROD | `AMAZON_LINUX_2023`, `UBUNTU_22_04`, `UBUNTU_24_04`, `WINDOWS_2019`, `WINDOWS_2022` |
 | `key_name` | DEV e PROD | Nome do Key Pair criado na etapa anterior |
 
 ### Variáveis opcionais (têm default)
@@ -90,14 +90,14 @@ cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
 | Variável | Default DEV | Default PROD | Descrição |
 |---|---|---|---|
 | `instance_count` | `2` | `3` | Quantidade de instâncias EC2 |
-| `instance_type` | `t3.micro` | `t3.small` | Tipo da instância (deve ser x86_64) |
-| `environment` | `dev` | `PROD` | Nome do ambiente usado nas tags |
+| `instance_type` | `t3.micro` | `t3.micro` | Tipo da instância (deve ser x86_64) |
+| `environment` | `DEV` | `PROD` | Nome do ambiente usado nas tags |
 
 ### Exemplo de `terraform.tfvars`
 
 ```hcl
 myip           = "1.2.3.4/32"
-ami_id         = "ami-0abcdef1234567890"  # apenas PROD
+os_type        = "AMAZON_LINUX_2023"
 key_name       = "minha-chave"
 instance_count = 2
 instance_type  = "t3.micro"
@@ -134,7 +134,7 @@ terraform destroy
 |---|---|---|
 | **DEV** | push em `staging` | init → fmt check → validate → plan → apply |
 | **PROD CI** | pull request para `main` | init → fmt check → validate → plan (resultado postado como comentário no PR) |
-| **PROD CD** | manual (`workflow_dispatch`) | init → plan → apply |
+| **PROD CD** | merge/push em `main` | init → plan → apply |
 
 ### Secrets necessários no GitHub
 
@@ -145,7 +145,6 @@ Vá em *Settings → Secrets and variables → Actions* e adicione:
 | `AWS_ACCESS_KEY_ID` | Access key da sua conta AWS |
 | `AWS_SECRET_ACCESS_KEY` | Secret key da sua conta AWS |
 | `MY_IP_CIDR` | Seu IP em formato CIDR (ex: `1.2.3.4/32`) |
-| `PROD_AMI_ID` | ID da AMI a usar no PROD (ex: `ami-0abcdef1234567890`) |
 
 ---
 
@@ -179,7 +178,7 @@ Cria um security group com acesso SSH liberado para o CIDR da VPC e para o seu I
 
 Cria `N` instâncias EC2 na subnet pública com disco criptografado.
 
-- Nome das instâncias: `EC2-{ambiente}-001`, `EC2-{ambiente}-002`, ...
+- Nome das instâncias: `{OS_TYPE}-{ambiente}-001`, ex: `AMAZON_LINUX_2023-PROD-001`
 - AMI: definida pelo ambiente (data source dinâmico no DEV, variável fixa no PROD)
 
 **Outputs:** `public_ip[]`, `instance_ids[]`
@@ -199,3 +198,38 @@ Conecte usando a chave `.pem`:
 ```bash
 ssh -i NOME_DA_CHAVE.pem ec2-user@IP_DA_INSTANCIA
 ```
+
+---
+
+## Acesso RDP às instâncias Windows
+
+Após o apply, pegue o IP público via output:
+
+```bash
+terraform output public_ip
+```
+
+Descriptografe a senha de Administrator com sua chave `.pem`:
+
+```bash
+aws ec2 get-password-data \
+  --instance-id i-XXXXXXXXXXXXXXXXX \
+  --priv-launch-key NOME_DA_CHAVE.pem \
+  --query "PasswordData" \
+  --output text
+```
+
+> A senha só fica disponível ~4 minutos após o boot. Se retornar vazio, aguarde e tente novamente.
+
+> Se receber o erro `Unable to decrypt password data using provided private key file`, sua chave pode estar no formato OpenSSH. Converta para PEM antes de rodar o comando:
+> ```bash
+> cp NOME_DA_CHAVE.pem NOME_DA_CHAVE.pem.bak
+> ssh-keygen -p -m PEM -f NOME_DA_CHAVE.pem
+> ```
+
+Conecte via RDP com:
+
+- **Host:** IP público da instância
+- **Usuário:** `Administrator`
+- **Senha:** valor retornado pelo comando acima
+
