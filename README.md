@@ -130,11 +130,15 @@ terraform destroy
 
 ## CI/CD (GitHub Actions)
 
-| Ambiente | Trigger | O que faz |
+| Workflow | Trigger | O que faz |
 |---|---|---|
 | **DEV** | push em `staging` | init → fmt check → validate → plan → apply |
+| **DEV Destroy** | manual (`workflow_dispatch`) | destroy do ambiente DEV |
 | **PROD CI** | pull request para `main` | init → fmt check → validate → plan (resultado postado como comentário no PR) |
 | **PROD CD** | merge/push em `main` | init → plan → apply |
+| **PROD Destroy** | manual (`workflow_dispatch`) | destroy do ambiente PROD |
+
+Para rodar um destroy: vá em **Actions → escolha o workflow de Destroy → Run workflow** e informe o `os_type` usado no deploy.
 
 ### Secrets necessários no GitHub
 
@@ -185,7 +189,7 @@ Cria `N` instâncias EC2 na subnet pública com disco criptografado.
 
 ---
 
-## Acesso SSH às instâncias
+## Acesso SSH às instâncias Linux
 
 Após o apply, pegue o IP público via output:
 
