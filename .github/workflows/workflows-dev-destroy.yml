@@ -4,8 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       os_type:
-        description: 'SO das instâncias a destruir (AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022)'
+        description: 'Sistema Operacional das instâncias'
         required: true
+        type: choice
+        options:
+          - AMAZON_LINUX_2023
+          - UBUNTU_22_04
+          - UBUNTU_24_04
+          - WINDOWS_2019
+          - WINDOWS_2022
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
