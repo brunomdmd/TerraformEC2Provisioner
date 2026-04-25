@@ -142,13 +142,17 @@ Para rodar um destroy: vá em **Actions → escolha o workflow de Destroy → Ru
 
 ### Secrets necessários no GitHub
 
-Vá em *Settings → Secrets and variables → Actions* e adicione:
+Os secrets ficam separados por **Environment** (`DEV` e `PROD`), permitindo usar contas ou usuários AWS diferentes por ambiente.
+
+Vá em *Settings → Environments → (selecione o environment) → Add environment secret* e adicione em cada um:
 
 | Secret | Valor |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | Access key da sua conta AWS |
-| `AWS_SECRET_ACCESS_KEY` | Secret key da sua conta AWS |
+| `AWS_ACCESS_KEY_ID` | Access key do usuário AWS do ambiente |
+| `AWS_SECRET_ACCESS_KEY` | Secret key do usuário AWS do ambiente |
 | `MY_IP_CIDR` | Seu IP em formato CIDR (ex: `1.2.3.4/32`) |
+
+> Para criar os environments: *Settings → Environments → New environment* → crie `DEV` e `PROD`.
 
 ---
 

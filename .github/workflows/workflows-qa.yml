@@ -14,6 +14,7 @@ env:
 jobs:
   Terraform_CI_CD:
     runs-on: ubuntu-latest
+    environment: DEV
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4

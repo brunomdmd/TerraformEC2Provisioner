@@ -16,6 +16,7 @@ env:
 jobs:
   terraform-destroy:
     runs-on: ubuntu-latest
+    environment: DEV
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4

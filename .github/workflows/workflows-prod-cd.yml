@@ -15,6 +15,7 @@ env:
 jobs:
   terraform-apply:
     runs-on: ubuntu-latest
+    environment: PROD
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
