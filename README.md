@@ -133,12 +133,19 @@ terraform destroy
 | Workflow | Trigger | O que faz |
 |---|---|---|
 | **DEV** | push em `staging` | init → fmt check → validate → plan → apply |
-| **DEV Destroy** | manual (`workflow_dispatch`) | destroy do ambiente DEV |
+| **DEV Destroy** | manual (`workflow_dispatch`) | destroy do ambiente DEV — seleciona o OS no dropdown |
 | **PROD CI** | pull request para `main` | init → fmt check → validate → plan (resultado postado como comentário no PR) |
-| **PROD CD** | merge/push em `main` | init → plan → apply |
-| **PROD Destroy** | manual (`workflow_dispatch`) | destroy do ambiente PROD |
+| **PROD CD** | manual (`workflow_dispatch`) | seleciona o OS no dropdown → plan → apply |
+| **PROD Destroy** | manual (`workflow_dispatch`) | destroy do ambiente PROD — seleciona o OS no dropdown |
 
-Para rodar um destroy: vá em **Actions → escolha o workflow de Destroy → Run workflow** e informe o `os_type` usado no deploy.
+**Fluxo PROD:**
+1. Abre PR para `main` → PROD CI roda e posta o plan como comentário
+2. Revisa o plan e faz o merge
+3. Vá em *Actions → PROD CD → Run workflow* → selecione o SO → aplica
+
+**Fluxo DEV:**
+- Push em `staging` → deploy automático com o `os_type` definido no `terraform.tfvars`
+- Para destruir: *Actions → DEV Destroy → Run workflow* → selecione o SO
 
 ### Secrets necessários no GitHub
 
