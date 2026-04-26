@@ -14,7 +14,7 @@ TerraformEC2Provisioner/
 │   └── ec2/             → Instâncias EC2 com disco criptografado
 └── environments/
     ├── prod/            → Ponto de entrada do PROD (terraform apply aqui)
-    └── dev/              → Ponto de entrada do DEV  (terraform apply aqui)
+    └── dev/             → Ponto de entrada do DEV  (terraform apply aqui)
 ```
 
 Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraform é sempre executado dentro de `environments/prod` ou `environments/dev`.
@@ -45,7 +45,7 @@ Depois configure o nome do bucket no backend de cada ambiente:
 | Arquivo | Linha a alterar |
 |---|---|
 | `environments/prod/main.tf` | `bucket = "SEU_BUCKET_PROD"` |
-| `environments/dev/main.tf`   | `bucket = "SEU_BUCKET_DEV"` |
+| `environments/dev/main.tf`  | `bucket = "SEU_BUCKET_DEV"` |
 
 #### Key Pair — acesso SSH às instâncias
 Crie um Key Pair na AWS e salve a chave privada (`.pem`) localmente:
@@ -60,8 +60,6 @@ chmod 400 NOME_DA_CHAVE.pem
 ```
 
 > A chave privada `.pem` é gerada **uma única vez**. Guarde em lugar seguro — a AWS não armazena a parte privada.
-
-Configure o nome da chave no `terraform.tfvars` de cada ambiente (ver seção abaixo).
 
 ---
 
@@ -107,11 +105,11 @@ instance_type  = "t3.micro"
 
 ---
 
-## Uso local
+## Uso
 
 ```bash
 # Entre na pasta do ambiente desejado
-cd environments/qa   # ou environments/prod
+cd environments/dev   # ou environments/prod
 
 # Primeira vez (baixa providers e configura backend)
 terraform init
@@ -125,41 +123,6 @@ terraform apply
 # Destrói toda a infraestrutura do ambiente
 terraform destroy
 ```
-
----
-
-## CI/CD (GitHub Actions)
-
-| Workflow | Trigger | O que faz |
-|---|---|---|
-| **DEV** | push em `staging` | init → fmt check → validate → plan → apply |
-| **DEV Destroy** | manual (`workflow_dispatch`) | destroy do ambiente DEV — seleciona o OS no dropdown |
-| **PROD CI** | pull request para `main` | init → fmt check → validate → plan (resultado postado como comentário no PR) |
-| **PROD CD** | manual (`workflow_dispatch`) | seleciona o OS no dropdown → plan → apply |
-| **PROD Destroy** | manual (`workflow_dispatch`) | destroy do ambiente PROD — seleciona o OS no dropdown |
-
-**Fluxo PROD:**
-1. Abre PR para `main` → PROD CI roda e posta o plan como comentário
-2. Revisa o plan e faz o merge
-3. Vá em *Actions → PROD CD → Run workflow* → selecione o SO → aplica
-
-**Fluxo DEV:**
-- Push em `staging` → deploy automático com o `os_type` definido no `terraform.tfvars`
-- Para destruir: *Actions → DEV Destroy → Run workflow* → selecione o SO
-
-### Secrets necessários no GitHub
-
-Os secrets ficam separados por **Environment** (`DEV` e `PROD`), permitindo usar contas ou usuários AWS diferentes por ambiente.
-
-Vá em *Settings → Environments → (selecione o environment) → Add environment secret* e adicione em cada um:
-
-| Secret | Valor |
-|---|---|
-| `AWS_ACCESS_KEY_ID` | Access key do usuário AWS do ambiente |
-| `AWS_SECRET_ACCESS_KEY` | Secret key do usuário AWS do ambiente |
-| `MY_IP_CIDR` | Seu IP em formato CIDR (ex: `1.2.3.4/32`) |
-
-> Para criar os environments: *Settings → Environments → New environment* → crie `DEV` e `PROD`.
 
 ---
 
@@ -194,9 +157,9 @@ Cria um security group com acesso SSH liberado para o CIDR da VPC e para o seu I
 Cria `N` instâncias EC2 na subnet pública com disco criptografado.
 
 - Nome das instâncias: `{OS_TYPE}-{ambiente}-001`, ex: `AMAZON_LINUX_2023-PROD-001`
-- AMI: definida pelo ambiente (data source dinâmico no DEV, variável fixa no PROD)
+- AMI: buscada automaticamente via data source com base no `os_type`
 
-**Outputs:** `public_ip[]`, `instance_ids[]`
+**Outputs:** `public_ip[]`, `private_ip[]`, `instance_ids[]`, `instance_name[]`
 
 ---
 
@@ -247,4 +210,3 @@ Conecte via RDP com:
 - **Host:** IP público da instância
 - **Usuário:** `Administrator`
 - **Senha:** valor retornado pelo comando acima
-
