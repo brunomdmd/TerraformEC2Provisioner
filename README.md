@@ -30,7 +30,7 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 - [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.4.0
 - [AWS CLI](https://aws.amazon.com/pt/cli/) configurado com `aws configure`
 
-Nota: É necessário criar um usuário na AWS com acesso via CLI, seguindo o princípio do menor privilégio possível. Configure esse usuário com as permissões descritas abaixo:
+> É necessário criar um usuário na AWS com acesso via CLI, seguindo o princípio do menor privilégio possível. Configure esse usuário com as permissões descritas abaixo:
 
 ```yaml
 {
@@ -104,8 +104,8 @@ Nota: É necessário criar um usuário na AWS com acesso via CLI, seguindo o pri
 				"s3:PutBucketVersioning"
 			],
 			"Resource": [
-				"arn:aws:s3:::*-tfstate",
-				"arn:aws:s3:::*-tfstate/*"
+				"arn:aws:s3:::*-tfstate*",
+				"arn:aws:s3:::*-tfstate*/*"
 			]
 		}
 	]
@@ -118,9 +118,9 @@ Nota: É necessário criar um usuário na AWS com acesso via CLI, seguindo o pri
 O Terraform salva o [state file](https://developer.hashicorp.com/terraform/language/state) em um bucket S3. Crie um bucket antes de rodar:
 
 ```bash
-aws s3api create-bucket --bucket <<SEU_BUCKET-tfstate>> --region us-east-1
+aws s3api create-bucket --bucket SEU_BUCKET-tfstate --region us-east-1
 aws s3api put-bucket-versioning \
-  --bucket <<SEU_BUCKET-tfstate>> \
+  --bucket SEU_BUCKET-tfstate \
   --versioning-configuration Status=Enabled
 ```
 
@@ -128,8 +128,10 @@ Depois configure o nome do bucket no backend de cada ambiente:
 
 | Arquivo | Linha a alterar |
 |---|---|
-| `environments/prod/main.tf` | `bucket = "<<SEU_BUCKET-tfstate_PROD>>"` |
-| `environments/dev/main.tf`  | `bucket = "<<SEU_BUCKET-tfstate_DEV>>"` |
+| `environments/prod/main.tf` | `bucket = "SEU_BUCKET-tfstate_PROD"` |
+| `environments/dev/main.tf`  | `bucket = "SEU_BUCKET-tfstate_DEV"` |
+
+> É necessário que o bucket do S3 contenha `-tfstate` no nome, devido às restrições configuradas nas permissões atribuídas ao usuário.
 
 #### Key Pair — acesso SSH às instâncias
 Crie um Key Pair na AWS e salve a chave privada (`.pem`) localmente:
