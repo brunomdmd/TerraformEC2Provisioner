@@ -29,6 +29,7 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 
 - [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.4.0
 - [AWS CLI](https://aws.amazon.com/pt/cli/) configurado com `aws configure`
+
 Nota: É necessário criar um usuário na AWS com acesso via CLI, seguindo o princípio do menor privilégio possível. Configure esse usuário com as permissões descritas abaixo:
 
 ```yaml
