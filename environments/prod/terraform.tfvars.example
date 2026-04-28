@@ -1,13 +1,8 @@
 # Copie este arquivo para terraform.tfvars e preencha os valores
 # NUNCA commite terraform.tfvars no Git (já está no .gitignore)
 
-# AMI fixa para PROD — consulte o AMI Catalog da AWS para obter o ID correto:
-# https://us-east-1.console.aws.amazon.com/ec2/home#AMICatalog
-# Filtre por: Amazon Linux 2023, x86_64, HVM
-ami_id = "ami-XXXXXXXXXXXXXXXXX"
-
 # Seu IP público em formato CIDR — obtenha em https://checkip.amazonaws.com
-myip = "SEU_IP_AQUI/32"
+myip = "1.2.3.4/32"
 
 # Opcional: sobrescreva os defaults abaixo apenas se necessário
 # environment    = "PROD"

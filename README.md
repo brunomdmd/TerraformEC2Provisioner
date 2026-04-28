@@ -21,12 +21,95 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 
 ---
 
+
+
 ## Pré-requisitos
 
 ### 1. Ferramentas
 
 - [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.4.0
 - [AWS CLI](https://aws.amazon.com/pt/cli/) configurado com `aws configure`
+Nota: É necessário criar um usuário na AWS com acesso via CLI, seguindo o princípio do menor privilégio possível. Configure esse usuário com as permissões descritas abaixo:
+
+```yaml
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "VisualEditor0",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:DeleteSubnet",
+				"ec2:AuthorizeSecurityGroupIngress",
+				"ec2:DescribeInstances",
+				"ec2:CreateKeyPair",
+				"ec2:AttachInternetGateway",
+				"ec2:DeleteRouteTable",
+				"ec2:AssociateRouteTable",
+				"ec2:DescribeInternetGateways",
+				"ec2:StartInstances",
+				"ec2:CreateRoute",
+				"ec2:CreateInternetGateway",
+				"ec2:RevokeSecurityGroupEgress",
+				"ec2:DescribeVolumes",
+				"ec2:DescribeAccountAttributes",
+				"ec2:DeleteInternetGateway",
+				"ec2:DescribeKeyPairs",
+				"ec2:DescribeRouteTables",
+				"ec2:CreateTags",
+				"ec2:CreateRouteTable",
+				"ec2:RunInstances",
+				"ec2:DetachInternetGateway",
+				"ec2:DisassociateRouteTable",
+				"ec2:StopInstances",
+				"ec2:DescribeInstanceCreditSpecifications",
+				"ec2:RevokeSecurityGroupIngress",
+				"ec2:GetPasswordData",
+				"ec2:DescribeSecurityGroupRules",
+				"ec2:DescribeInstanceTypes",
+				"ec2:DeleteVpc",
+				"ec2:CreateSubnet",
+				"ec2:DescribeSubnets",
+				"ec2:DeleteTags",
+				"ec2:DescribeInstanceAttribute",
+				"ec2:CreateVpc",
+				"ec2:DescribeVpcAttribute",
+				"ec2:ModifySubnetAttribute",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeAvailabilityZones",
+				"ec2:CreateSecurityGroup",
+				"ec2:ModifyVpcAttribute",
+				"ec2:ModifyInstanceAttribute",
+				"ec2:AuthorizeSecurityGroupEgress",
+				"ec2:TerminateInstances",
+				"ec2:DescribeTags",
+				"ec2:DeleteRoute",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DescribeImages",
+				"ec2:DescribeVpcs",
+				"ec2:DeleteSecurityGroup"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "VisualEditor1",
+			"Effect": "Allow",
+			"Action": [
+				"s3:PutObject",
+				"s3:GetObject",
+				"s3:CreateBucket",
+				"s3:ListBucket",
+				"s3:DeleteObject",
+				"s3:PutBucketVersioning"
+			],
+			"Resource": [
+				"arn:aws:s3:::*-tfstate",
+				"arn:aws:s3:::*-tfstate/*"
+			]
+		}
+	]
+}
+```
 
 ### 2. Recursos AWS que precisam existir antes do deploy
 
@@ -34,9 +117,9 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 O Terraform salva o [state file](https://developer.hashicorp.com/terraform/language/state) em um bucket S3. Crie um bucket antes de rodar:
 
 ```bash
-aws s3api create-bucket --bucket SEU_BUCKET --region us-east-1
+aws s3api create-bucket --bucket <<SEU_BUCKET-tfstate>> --region us-east-1
 aws s3api put-bucket-versioning \
-  --bucket SEU_BUCKET \
+  --bucket <<SEU_BUCKET-tfstate>> \
   --versioning-configuration Status=Enabled
 ```
 
@@ -44,8 +127,8 @@ Depois configure o nome do bucket no backend de cada ambiente:
 
 | Arquivo | Linha a alterar |
 |---|---|
-| `environments/prod/main.tf` | `bucket = "SEU_BUCKET_PROD"` |
-| `environments/dev/main.tf`  | `bucket = "SEU_BUCKET_DEV"` |
+| `environments/prod/main.tf` | `bucket = "<<SEU_BUCKET-tfstate_PROD>>"` |
+| `environments/dev/main.tf`  | `bucket = "<<SEU_BUCKET-tfstate_DEV>>"` |
 
 #### Key Pair — acesso SSH às instâncias
 Crie um Key Pair na AWS e salve a chave privada (`.pem`) localmente:
@@ -80,8 +163,10 @@ cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
 | Variável | Onde usar | Como obter / Valores aceitos |
 |---|---|---|
 | `myip` | DEV e PROD | Seu IP público: `curl https://checkip.amazonaws.com` — adicione `/32` no final (ex: `1.2.3.4/32`) |
-| `os_type` | DEV e PROD | `AMAZON_LINUX_2023`, `UBUNTU_22_04`, `UBUNTU_24_04`, `WINDOWS_2019`, `WINDOWS_2022` |
-| `key_name` | DEV e PROD | Nome do Key Pair criado na etapa anterior |
+
+> O myip deve ser utilizado apenas para testes locais e ambientes de laboratório (LAB) destinados a estudo.
+
+---
 
 ### Variáveis opcionais (têm default)
 
@@ -90,15 +175,17 @@ cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
 | `instance_count` | `2` | `3` | Quantidade de instâncias EC2 |
 | `instance_type` | `t3.micro` | `t3.micro` | Tipo da instância (deve ser x86_64) |
 | `environment` | `DEV` | `PROD` | Nome do ambiente usado nas tags |
+| `os_type` | DEV e PROD | `AMAZON_LINUX_2023`, `UBUNTU_22_04`, `UBUNTU_24_04`, `WINDOWS_2019`, `WINDOWS_2022` |
+| `key_name` | DEV e PROD | Nome do Key Pair criado na etapa anterior |
 
 ### Exemplo de `terraform.tfvars`
 
 ```hcl
 myip           = "1.2.3.4/32"
-os_type        = "AMAZON_LINUX_2023"
-key_name       = "minha-chave"
-instance_count = 2
-instance_type  = "t3.micro"
+# os_type        = "AMAZON_LINUX_2023"
+# key_name       = "minha-chave"
+# instance_count = 2
+# instance_type  = "t3.micro"
 ```
 
 > `terraform.tfvars` está no `.gitignore` — nunca é enviado ao repositório.

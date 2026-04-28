@@ -21,7 +21,7 @@ variable "os_type" {
       "WINDOWS_2022",
       "WINDOWS_2019"
     ], var.os_type)
-    error_message = "Os valores aceitos são: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"  
+    error_message = "Os valores aceitos são: AMAZON_LINUX_2023, UBUNTU_22_04, UBUNTU_24_04, WINDOWS_2019, WINDOWS_2022"
   }
 }
 

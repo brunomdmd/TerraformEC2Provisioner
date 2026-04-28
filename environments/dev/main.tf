@@ -20,24 +20,24 @@ terraform {
 locals {
   ami_filters = {
     AMAZON_LINUX_2023 = {
-      name   = ["al2023-ami-*-x86_64"]
-      owner  = "amazon"
+      name  = ["al2023-ami-*-x86_64"]
+      owner = "amazon"
     }
     UBUNTU_24_04 = {
-      name   = ["ubuntu/images/hvm-ssd-gp3/ubuntu-*-24.04-amd64-server-*"]
-      owner  = "099720109477"
+      name  = ["ubuntu/images/hvm-ssd-gp3/ubuntu-*-24.04-amd64-server-*"]
+      owner = "099720109477"
     }
     UBUNTU_22_04 = {
-      name   = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04-amd64-server-*"]
-      owner  = "099720109477"
+      name  = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04-amd64-server-*"]
+      owner = "099720109477"
     }
     WINDOWS_2022 = {
-      name   = ["Windows_Server-2022-English-Full-Base-*"]
-      owner  = "amazon"
+      name  = ["Windows_Server-2022-English-Full-Base-*"]
+      owner = "amazon"
     }
     WINDOWS_2019 = {
-      name   = ["Windows_Server-2019-English-Full-Base-*"]
-      owner  = "amazon"
+      name  = ["Windows_Server-2019-English-Full-Base-*"]
+      owner = "amazon"
     }
   }
 }
@@ -72,7 +72,7 @@ module "security_group" {
 
 module "ec2" {
   source            = "../../modules/ec2"
-  os_type           = var.os_type  
+  os_type           = var.os_type
   ami_id            = data.aws_ami.selected.id
   instance_count    = var.instance_count
   instance_type     = var.instance_type
