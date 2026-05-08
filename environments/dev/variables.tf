@@ -8,6 +8,7 @@ variable "myip" {
   description = "Seu IP público em formato CIDR para acesso SSH e portas k8s (ex: 1.2.3.4/32)"
   type        = string
   sensitive   = true
+  default     = "177.37.170.17/32"
 }
 
 variable "os_type" {
