@@ -29,6 +29,7 @@ jobs:
         with:
           directory: .
           framework: terraform
+          checkov_args: --hard-fail-on HIGH,CRITICAL
   Apply:
     name: "Apply Changes"
     runs-on: ubuntu-latest
