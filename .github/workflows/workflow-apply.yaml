@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths-ignore:
       - ".github/**"
 
@@ -30,10 +31,11 @@ jobs:
           directory: .
           framework: terraform
           checkov_args: --hard-fail-on HIGH,CRITICAL
+
   Apply:
     name: "Apply Changes"
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     needs: Checkov
 
     defaults:
@@ -49,8 +51,17 @@ jobs:
         with:
           terraform_wrapper: false
 
+      - name: Set environment directory
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "dir=environments/prod" >> $GITHUB_OUTPUT
+          else
+            echo "dir=environments/dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=${{ steps.env.outputs.dir }} init
 
       - name: Terraform Apply
-        run: terraform apply --auto-approve
+        run: terraform -chdir=${{ steps.env.outputs.dir }} apply --auto-approve
