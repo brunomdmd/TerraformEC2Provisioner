@@ -36,7 +36,7 @@ variable "key_name" {
   default     = "TERRAFORM-KEY"
 }
 
-variable "iam_instance_profile" {
+variable "iam_ec2" {
   description = "IAM das instância EC2"
   type        = string
   default     = "instanceRole"

@@ -72,12 +72,8 @@ module "security_group" {
 
 module "ec2" {
   source            = "../../modules/ec2"
-  os_type           = var.os_type
   ami_id            = data.aws_ami.selected.id
-  instance_count    = var.instance_count
-  instance_type     = var.instance_type
-  key_name          = var.key_name
   subnet_id         = module.vpc.subnet_public_id
   security_group_id = [module.security_group.security_group_id]
-  environment       = var.environment
+
 }

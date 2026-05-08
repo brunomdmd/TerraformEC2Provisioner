@@ -7,7 +7,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids = var.security_group_id
   ebs_optimized          = true
   monitoring             = true
-  iam_instance_profile   = var.iam_instance_profile
+  iam_instance_profile   = var.iam_ec2
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
