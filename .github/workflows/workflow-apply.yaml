@@ -30,7 +30,7 @@ jobs:
         with:
           directory: .
           framework: terraform
-          checkov_args: --hard-fail-on HIGH,CRITICAL
+          check: HIGH,CRITICAL
 
   Apply:
     name: "Apply Changes"
