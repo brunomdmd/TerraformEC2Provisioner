@@ -21,7 +21,7 @@ variable "os_type" {
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente DEV"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "instance_type" {
