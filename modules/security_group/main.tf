@@ -2,7 +2,6 @@ resource "aws_security_group" "sg_default" {
   name        = "SG-DEFAULT-${var.environment}"
   vpc_id      = var.vpc_id
   description = "Allow traffic inbound"
-
   tags = {
     Name     = "SG-${var.environment}"
     Ambiente = var.environment
@@ -25,6 +24,7 @@ resource "aws_security_group" "sg_default" {
   }  
 
   egress {
+    description = "ALLOW-ALL-EGRESS"    
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
