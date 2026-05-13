@@ -41,3 +41,8 @@ variable "os_type" {
   description = "Nome do SO (Usado para nome da instância)"
   type        = string
 }
+
+variable "iam_ec2" {
+  description = "IAM das instância EC2"
+  type        = string
+}
