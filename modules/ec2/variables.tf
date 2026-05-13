@@ -42,7 +42,7 @@ variable "os_type" {
   type        = string
 }
 
-variable "iam_ec2" {
+variable "iam_role" {
   description = "IAM das instância EC2"
   type        = string
 }

@@ -77,7 +77,7 @@ module "ec2" {
   instance_count    = var.instance_count
   instance_type     = var.instance_type
   key_name          = var.key_name
-  iam_instance_profile   = var.iam_ec2
+  iam_role          = var.iam_role
   subnet_id         = module.vpc.subnet_public_id
   security_group_id = [module.security_group.security_group_id]
   environment       = var.environment
