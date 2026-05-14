@@ -1,9 +1,9 @@
-name: Delete Infra
+name: Terraform Destroy - Infrastructure
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Ambiente para destruir'
+        description: "Ambiente para destruir"
         required: true
         type: choice
         options:
@@ -20,8 +20,6 @@ jobs:
   destroy:
     name: "Destroy Infrastructure"
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment == 'prod' && 'production' || 'development' }}
-
     defaults:
       run:
         shell: bash
@@ -36,12 +34,12 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
-        run: terraform -chdir=environments/${{ github.event.inputs.environment }} init
+        run: terraform init
 
       - name: Show Destroy plan
-        run: terraform -chdir=environments/${{ github.event.inputs.environment }} plan -destroy
+        run: terraform plan -destroy
         continue-on-error: true
 
       - name: Destroy resources jobs
         id: destroy
-        run: terraform -chdir=environments/${{ github.event.inputs.environment }} destroy --auto-approve
+        run: terraform destroy --auto-approve
