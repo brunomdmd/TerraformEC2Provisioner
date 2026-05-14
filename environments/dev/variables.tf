@@ -17,7 +17,6 @@ variable "os_type" {
   default     = "AMAZON_LINUX_2023"
   }
 
-
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente DEV"
   type        = number
