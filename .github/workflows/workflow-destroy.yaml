@@ -20,6 +20,7 @@ jobs:
   destroy:
     name: "Destroy Infrastructure"
     runs-on: ubuntu-latest
+    environment: ${{ (github.event.inputs.environment == 'prod' || github.ref_name == 'production') && 'production' || 'development' }}
     defaults:
       run:
         shell: bash
@@ -33,13 +34,22 @@ jobs:
         with:
           terraform_wrapper: false
 
+      - name: Set environment directory
+        id: env
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "prod" ] || [ "${{ github.ref_name }}" == "production" ]; then
+            echo "dir=environments/prod" >> $GITHUB_OUTPUT
+          else
+            echo "dir=environments/dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=${{ steps.env.outputs.dir }} init
 
       - name: Show Destroy plan
-        run: terraform plan -destroy
+        run: terraform -chdir=${{ steps.env.outputs.dir }} plan -destroy
         continue-on-error: true
 
       - name: Destroy resources jobs
         id: destroy
-        run: terraform destroy --auto-approve
+        run: terraform -chdir=${{ steps.env.outputs.dir }} destroy --auto-approve
