@@ -1,10 +1,10 @@
-name: Deploy Infrastructure
+name: Terraform Apply - Infrastructure
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - develop
+      - production
+      - development
     paths-ignore:
       - ".github/**"
 
@@ -35,9 +35,8 @@ jobs:
   Apply:
     name: "Apply Changes"
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    environment: ${{ (github.event.inputs.environment == 'prod' || github.ref_name == 'production') && 'production' || 'development' }}
     needs: Checkov
-
     defaults:
       run:
         shell: bash
@@ -54,7 +53,7 @@ jobs:
       - name: Set environment directory
         id: env
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.event.inputs.environment }}" == "prod" ] || [ "${{ github.ref_name }}" == "production" ]; then
             echo "dir=environments/prod" >> $GITHUB_OUTPUT
           else
             echo "dir=environments/dev" >> $GITHUB_OUTPUT
