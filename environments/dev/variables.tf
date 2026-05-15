@@ -40,9 +40,3 @@ variable "key_name" {
   type        = string
   default     = "TERRAFORM-KEY"
 }
-
-variable "iam_role" {
-  description = "IAM das instância EC2"
-  type        = string
-  default     = "instanceRole"
-}
