@@ -4,6 +4,12 @@ variable "environment" {
   default     = "PROD"
 }
 
+variable "service" {
+  description = "Nome do Serviço/Projeto"
+  type        = string
+  default     = "Serviço XPT"
+}
+
 variable "myip" {
   description = "Seu IP público em formato CIDR para acesso SSH e portas k8s (ex: 1.2.3.4/32)"
   type        = string

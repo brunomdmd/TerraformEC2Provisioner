@@ -4,6 +4,12 @@ variable "environment" {
   default     = "DEV"
 }
 
+variable "service" {
+  description = "Nome do Serviço/Projeto"
+  type        = string
+  default     = "Serviço XPT"
+}
+
 variable "myip" {
   description = "Seu IP público em formato CIDR para acesso SSH e portas k8s (ex: 1.2.3.4/32)"
   type        = string
@@ -20,7 +26,7 @@ variable "os_type" {
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente DEV"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "instance_type" {
