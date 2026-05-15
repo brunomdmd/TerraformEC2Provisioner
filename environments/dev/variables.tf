@@ -7,7 +7,7 @@ variable "environment" {
 variable "service" {
   description = "Nome do Serviço/Projeto"
   type        = string
-  default     = "Serviço XPT"
+  default     = "Serviço de Compras"
 }
 
 variable "myip" {
@@ -26,7 +26,7 @@ variable "os_type" {
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente DEV"
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "instance_type" {
