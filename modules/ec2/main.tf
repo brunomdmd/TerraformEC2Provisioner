@@ -21,6 +21,6 @@ resource "aws_instance" "ec2" {
   tags = {
     Name     = "${var.environment}-${var.os_type}-${format("%03d", count.index + 1)}"
     Ambiente = var.environment
-    Serviço = var.service
+    Servico = var.service
   }
 }
