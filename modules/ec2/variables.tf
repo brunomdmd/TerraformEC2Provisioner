@@ -37,6 +37,11 @@ variable "environment" {
   type        = string
 }
 
+variable "service" {
+  description = "Nome do Serviço/Projeto"
+  type        = string
+}
+
 variable "os_type" {
   description = "Nome do SO (Usado para nome da instância)"
   type        = string
