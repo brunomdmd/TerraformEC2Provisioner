@@ -32,24 +32,17 @@ git clone https://github.com/SEU_USUARIO/TerraformEC2Provisioner.git
 cd TerraformEC2Provisioner
 
 git checkout -b development
-git push origin development
 
 git checkout -b production
-git push origin production
 ```
 
-> As branches `development` e `production` são obrigatórias — o pipeline CI/CD (GitHub Actions) usa o nome da branch para saber qual ambiente provisionar. Um push para `development` executa o módulo `environments/dev`; um push para `production` executa o módulo `environments/prod`.
+> Essas branches são obrigatórias — o pipeline CI/CD (GitHub Actions) usa o nome da branch para saber qual ambiente provisionar. Um push para `development` executa o módulo `environments/dev`, um push para `production` executa o módulo `environments/prod`.
 
 ---
 
 ### 2. Pré-requisitos
 
-#### Ferramentas (execução local)
-
-- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.4.0
-- [AWS CLI](https://aws.amazon.com/pt/cli/) configurado com `aws configure`
-
-> É necessário criar um usuário IAM na AWS com acesso via CLI. Configure esse usuário com as permissões abaixo, seguindo o princípio do menor privilégio:
+É necessário criar um usuário IAM na AWS com acesso via CLI. Configure esse usuário com a politica abaixo, seguindo o princípio do menor privilégio (least privilege access):
 
 ```json
 {
@@ -168,7 +161,7 @@ chmod 400 NOME_DA_CHAVE.pem
 
 ### 3. Configuração das variáveis
 
-As variáveis ficam nos arquivos `environments/dev/variables.tf` e `environments/prod/variables.tf`. Revise e ajuste cada uma conforme seu ambiente:
+As variáveis ficam nos arquivos `environments/dev/variables.tf` e `environments/prod/variables.tf`. 
 
 | Variável | Descrição |
 |---|---|
@@ -197,15 +190,31 @@ O pipeline usa três secrets que devem ser configurados no repositório em **Set
 
 ### 5. Deploy via GitHub Actions (fluxo principal)
 
-Com tudo configurado, o deploy é feito simplesmente fazendo push para a branch correspondente ao ambiente:
+Faço o checkout para a branch que deseja subir o ambiente
 
 ```bash
 # Sobe recursos no ambiente DEV
 git checkout development
-git push origin development
 
 # Sobe recursos no ambiente PROD
 git checkout production
+```
+
+Defina as [variáveis](#3-configuração-das-variáveis).  Salve o arquivo.
+
+```bash
+# Prepare  as modificações próximo salvamento (commit).
+git add -A
+
+# Faça o commit das alterações
+git add -m 'Defina uma descrição rápida'
+```
+
+```bash
+# Sobe recursos no ambiente DEV
+git push origin development
+
+# Sobe recursos no ambiente PROD
 git push origin production
 ```
 
@@ -238,6 +247,9 @@ Mesmo em ambientes de estudo, rodar o Checkov ajuda a desenvolver o hábito de e
 ## Uso local (opcional)
 
 Se preferir rodar o Terraform diretamente na sua máquina sem depender do CI/CD:
+
+- Instale o [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.4.0
+- Instalei o [AWS CLI](https://aws.amazon.com/pt/cli/) e execute `aws configure` para definir as credenciais
 
 ```bash
 # Entre na pasta do ambiente desejado
