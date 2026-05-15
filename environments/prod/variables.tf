@@ -26,7 +26,7 @@ variable "os_type" {
 variable "instance_count" {
   description = "Número de instâncias EC2 no ambiente PROD"
   type        = number
-  default     = 3
+  default     = 5
 }
 
 variable "instance_type" {
@@ -39,10 +39,4 @@ variable "key_name" {
   description = "Nome do par de chaves SSH"
   type        = string
   default     = "TERRAFORM-KEY"
-}
-
-variable "iam_role" {
-  description = "IAM das instância EC2"
-  type        = string
-  default     = "instanceRole"
 }
