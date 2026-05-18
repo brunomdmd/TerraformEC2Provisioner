@@ -366,3 +366,7 @@ Cria `N` instâncias EC2 na subnet pública com disco criptografado.
 - AMI buscada automaticamente via data source com base no `os_type`
 
 **Outputs:** `public_ip[]`, `private_ip[]`, `instance_ids[]`, `instance_name[]`
+
+## Arquitetura Final V1
+Com a versão V1 desse projeto, essa será a arquitetura da infraestrutura provisionada:
+![Arquitetura](ArquiteturaV1.png)
