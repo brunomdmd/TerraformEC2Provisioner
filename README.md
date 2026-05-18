@@ -1,8 +1,9 @@
 # Terraform EC2 Provisioner
 
-Provisiona instâncias EC2 na AWS com VPC, Subnets, Internet Gateway, Route Table e Security Group, usando módulos reutilizáveis por ambiente (DEV e PROD).
+Essa solução tem como objetivo permitir o provisionamento automatizado de instâncias EC2 na AWS, incluindo toda a infraestrutura necessária, como VPC, Subnets, Internet Gateway, Route Tables e Security Groups, utilizando módulos reutilizáveis por ambiente (DEV e PROD).
 
-> **Aviso:** Este projeto é destinado a fins de estudo — para você subir instâncias na AWS e usá-las nos seus labs. Ele foi construído de forma que também é possível incorporá-lo em ambientes empresariais, bastando adaptar as variáveis e o backend de statefile.
+Dessa forma, é possível, através de um único projeto, realizar o deploy de uma infraestrutura completa, padronizada e escalável para diferentes ambientes. Além disso, a esteira de CI/CD pode ser integrada aos seus projetos, permitindo automatizar a construção e o provisionamento da infraestrutura necessária para suas aplicações de forma prática, segura e consistente.
+
 
 ---
 
@@ -10,13 +11,14 @@ Provisiona instâncias EC2 na AWS com VPC, Subnets, Internet Gateway, Route Tabl
 
 ```
 TerraformEC2Provisioner/
+├── environments/
+|   ├── prod/            → Módulo raiz do PROD
+|   └── dev/             → Módulo raiz do DEV
 ├── modules/
 │   ├── vpc/             → VPC, subnets pública/privada, IGW, route table
 │   ├── security_group/  → Security group com regras de acesso SSH/RDP
 │   └── ec2/             → Instâncias EC2 com disco criptografado
-└── environments/
-    ├── prod/            → Módulo raiz do PROD
-    └── dev/             → Módulo raiz do DEV
+
 ```
 
 Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraform é sempre executado dentro de `environments/prod` ou `environments/dev`.
@@ -29,104 +31,133 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 
 ```bash
 git clone https://github.com/SEU_USUARIO/TerraformEC2Provisioner.git
+
 cd TerraformEC2Provisioner
 
-git checkout -b development
+git checkout -b development   # Para fazer deploy no ambiente de DEV
 
-git checkout -b production
+git checkout -b production # Para fazer deploy no ambiente de PROD
 ```
 
-> Essas branches são obrigatórias — o pipeline CI/CD (GitHub Actions) usa o nome da branch para saber qual ambiente provisionar. Um push para `development` executa o módulo `environments/dev`, um push para `production` executa o módulo `environments/prod`.
+> Essas branches são obrigatórias — o pipeline CI/CD usa o nome da branch para saber qual ambiente provisionar. Um push para `development` executa o módulo `environments/dev`, um push para `production` executa o módulo `environments/prod`.
 
 ---
 
 ### 2. Pré-requisitos
 
-É necessário criar um usuário IAM na AWS com acesso via CLI. Configure esse usuário com a politica abaixo, seguindo o princípio do menor privilégio (least privilege access):
+- Instalei o [AWS CLI](https://aws.amazon.com/pt/cli/)
+
+Para preparar a AWS para utilização dessa solução, é necessário criar um usuário IAM na AWS com as seguintes permissões, seguindo o princípio do menor privilégio (least privilege access):
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "VisualEditor0",
-      "Effect": "Allow",
-      "Action": [
-        "ec2:DeleteSubnet",
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DescribeInstances",
-        "ec2:CreateKeyPair",
-        "ec2:AttachInternetGateway",
-        "ec2:DeleteRouteTable",
-        "ec2:AssociateRouteTable",
-        "ec2:DescribeInternetGateways",
-        "ec2:StartInstances",
-        "ec2:CreateRoute",
-        "ec2:CreateInternetGateway",
-        "ec2:RevokeSecurityGroupEgress",
-        "ec2:DescribeVolumes",
-        "ec2:DescribeAccountAttributes",
-        "ec2:DeleteInternetGateway",
-        "ec2:DescribeKeyPairs",
-        "ec2:DescribeRouteTables",
-        "ec2:CreateTags",
-        "ec2:CreateRouteTable",
-        "ec2:RunInstances",
-        "ec2:DetachInternetGateway",
-        "ec2:DisassociateRouteTable",
-        "ec2:StopInstances",
-        "ec2:DescribeInstanceCreditSpecifications",
-        "ec2:RevokeSecurityGroupIngress",
-        "ec2:GetPasswordData",
-        "ec2:DescribeSecurityGroupRules",
-        "ec2:DescribeInstanceTypes",
-        "ec2:DeleteVpc",
-        "ec2:CreateSubnet",
-        "ec2:DescribeSubnets",
-        "ec2:DeleteTags",
-        "ec2:DescribeInstanceAttribute",
-        "ec2:CreateVpc",
-        "ec2:DescribeVpcAttribute",
-        "ec2:ModifySubnetAttribute",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DescribeAvailabilityZones",
-        "ec2:CreateSecurityGroup",
-        "ec2:ModifyVpcAttribute",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:AuthorizeSecurityGroupEgress",
-        "ec2:TerminateInstances",
-        "ec2:DescribeTags",
-        "ec2:DeleteRoute",
-        "ec2:DescribeSecurityGroups",
-        "ec2:DescribeImages",
-        "ec2:DescribeVpcs",
-        "ec2:DeleteSecurityGroup"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "VisualEditor1",
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:CreateBucket",
-        "s3:ListBucket",
-        "s3:DeleteObject",
-        "s3:PutBucketVersioning"
-      ],
-      "Resource": [
-        "arn:aws:s3:::*-tfstate*",
-        "arn:aws:s3:::*-tfstate*/*"
-      ]
-    }
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "VisualEditor0",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:DeleteSubnet",
+				"ec2:AuthorizeSecurityGroupIngress",
+				"ec2:DescribeInstances",
+				"ec2:CreateKeyPair",
+				"ec2:AttachInternetGateway",
+				"ec2:DeleteRouteTable",
+				"ec2:AssociateRouteTable",
+				"ec2:DescribeInternetGateways",
+				"ec2:StartInstances",
+				"ec2:CreateRoute",
+				"ec2:CreateInternetGateway",
+				"ec2:RevokeSecurityGroupEgress",
+				"ec2:DescribeVolumes",
+				"ec2:DescribeAccountAttributes",
+				"ec2:DeleteInternetGateway",
+				"ec2:DescribeKeyPairs",
+				"ec2:DescribeRouteTables",
+				"ec2:CreateTags",
+				"ec2:CreateRouteTable",
+				"ec2:RunInstances",
+				"ec2:DetachInternetGateway",
+				"ec2:DisassociateRouteTable",
+				"ec2:StopInstances",
+				"ec2:DescribeInstanceCreditSpecifications",
+				"ec2:RevokeSecurityGroupIngress",
+				"ec2:GetPasswordData",
+				"ec2:DescribeSecurityGroupRules",
+				"ec2:DescribeInstanceTypes",
+				"ec2:DeleteVpc",
+				"ec2:CreateSubnet",
+				"ec2:DescribeSubnets",
+				"ec2:DeleteTags",
+				"ec2:DescribeInstanceAttribute",
+				"ec2:CreateVpc",
+				"ec2:DescribeVpcAttribute",
+				"ec2:ModifySubnetAttribute",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeAvailabilityZones",
+				"ec2:CreateSecurityGroup",
+				"ec2:ModifyVpcAttribute",
+				"ec2:ModifyInstanceAttribute",
+				"ec2:AuthorizeSecurityGroupEgress",
+				"ec2:TerminateInstances",
+				"ec2:DescribeTags",
+				"ec2:DeleteRoute",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DescribeImages",
+				"ec2:DescribeVpcs",
+				"ec2:DeleteSecurityGroup",
+				"ec2:MonitorInstances"        
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "VisualEditor1",
+			"Effect": "Allow",
+			"Action": [
+				"s3:PutObject",
+				"s3:GetObject",
+				"s3:CreateBucket",
+				"s3:ListBucket",
+				"s3:DeleteObject",
+				"s3:PutBucketVersioning"
+			],
+			"Resource": [
+				"arn:aws:s3:::*-tfstate*",
+				"arn:aws:s3:::*-tfstate*/*"
+			]
+		}
+	]
 }
 ```
 
+Agora, crie uma **Access Key** e selecione o caso de uso “Command Line Interface (CLI)”.
+
+Em seguida, copie os valores de **Access Key ID** e **Secret Access Key** e armazene-os em um local seguro, pois essas credenciais serão utilizadas posteriormente na criação dos Secrets do GitHub, permitindo a autenticação da pipeline CI/CD com a AWS.
+
+Além disso, você também deverá utilizar essas credenciais para configurar o acesso local à AWS através da AWS CLI e realizar a criação de recursos diretamente pelo terminal, executando o comando abaixo:
+
+```bash
+aws configure
+```
+
+Após executar o comando, informe:
+
+```bash
+AWS Access Key ID: [Access Key Copiada]
+AWS Secret Access Key: [Secret Access Copiada]
+Default region name: [us-east-1]
+Default output format: [None]
+```
+
+Com isso, seu ambiente local estará autenticado e apto para realizar operações na AWS via linha de comando.
+
+
 #### Bucket S3 — state remoto
 
-O Terraform salva o [state file](https://developer.hashicorp.com/terraform/language/state) em um bucket S3. Crie o bucket antes de rodar:
+O "Terraform EC2 Provisioner" salva o [state file](https://developer.hashicorp.com/terraform/language/state) em um bucket S3. 
+
+> **Importante:** O nome do bucket deve conter `-tfstate`, conforme a restrição configurada nas permissões do usuário IAM.
+
 
 ```bash
 aws s3api create-bucket --bucket SEU_BUCKET-tfstate --region us-east-1
@@ -135,14 +166,6 @@ aws s3api put-bucket-versioning \
   --versioning-configuration Status=Enabled
 ```
 
-Depois configure o nome do bucket no backend de cada ambiente:
-
-| Arquivo | Linha a alterar |
-|---|---|
-| `environments/prod/main.tf` | `bucket = "SEU_BUCKET-tfstate_PROD"` |
-| `environments/dev/main.tf`  | `bucket = "SEU_BUCKET-tfstate_DEV"` |
-
-> O nome do bucket deve conter `-tfstate`, conforme a restrição configurada nas permissões do usuário IAM.
 
 #### Key Pair — acesso SSH e descriptografia de senha Windows
 
@@ -155,11 +178,39 @@ aws ec2 create-key-pair \
 chmod 400 NOME_DA_CHAVE.pem
 ```
 
-> A chave privada `.pem` é gerada **uma única vez**. A AWS não armazena a parte privada — guarde em lugar seguro.
+> **Importante:** A chave privada `.pem` é gerada **uma única vez**. A AWS não armazena a parte privada — guarde em lugar seguro.
 
 ---
 
-### 3. Configuração das variáveis
+
+### 3. GitHub Actions — Secrets obrigatórios
+
+O pipeline usa três secrets que devem ser configurados no repositório em **Settings → Secrets and variables → Actions**:
+
+| Secret | Descrição |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | Access Key do usuário IAM criado no passo 2 |
+| `AWS_SECRET_ACCESS_KEY` | Secret Key do mesmo usuário criado no passo 2 |
+| `MY_IP_CIDR` | Seu IP público em CIDR (ex: `1.2.3.4/32`) |
+
+---
+
+### 4. Deploy via GitHub Actions (fluxo principal)
+
+Faço o checkout para a branch que deseja subir o ambiente
+
+```bash
+# Sobe recursos no ambiente DEV
+git checkout development
+
+# Sobe recursos no ambiente PROD
+git checkout production
+```
+
+---
+
+
+### 5. Definição das varíaveis e nome do bucket s3 no backend
 
 As variáveis ficam nos arquivos `environments/dev/variables.tf` e `environments/prod/variables.tf`. 
 
@@ -172,50 +223,25 @@ As variáveis ficam nos arquivos `environments/dev/variables.tf` e `environments
 | `instance_type` | Tipo da instância EC2 (ex: `t3.micro`). Deve ser arquitetura x86_64 |
 | `key_name` | Nome do Key Pair criado na etapa anterior |
 
-> O `myip` também pode ser passado como secret do GitHub Actions (veja a seção de CI/CD abaixo), o que é a abordagem recomendada para não expor seu IP no código.
 
----
+Depois configure o nome do bucket no backend para o ambiente que deseja subir:
 
-### 4. GitHub Actions — Secrets obrigatórios
-
-O pipeline usa três secrets que devem ser configurados no repositório em **Settings → Secrets and variables → Actions**:
-
-| Secret | Descrição |
+| Arquivo | Linha a alterar |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | Access Key do usuário IAM criado no passo 2 |
-| `AWS_SECRET_ACCESS_KEY` | Secret Key do mesmo usuário |
-| `MY_IP_CIDR` | Seu IP público em CIDR (ex: `1.2.3.4/32`) |
+| `environments/prod/main.tf` | `bucket = "SEU_BUCKET-tfstate_PROD"` |
+| `environments/dev/main.tf`  | `bucket = "SEU_BUCKET-tfstate_DEV"` |
 
----
 
-### 5. Deploy via GitHub Actions (fluxo principal)
-
-Faço o checkout para a branch que deseja subir o ambiente
-
-```bash
-# Sobe recursos no ambiente DEV
-git checkout development
-
-# Sobe recursos no ambiente PROD
-git checkout production
-```
-
-Defina as [variáveis](#3-configuração-das-variáveis).  Salve o arquivo.
 
 ```bash
 # Prepare  as modificações próximo salvamento (commit).
 git add -A
 
 # Faça o commit das alterações
-git add -m 'Defina uma descrição rápida'
-```
+git commit -m 'Defina uma descrição rápida'
 
-```bash
-# Sobe recursos no ambiente DEV
-git push origin development
-
-# Sobe recursos no ambiente PROD
-git push origin production
+# Sobe recursos no ambiente DEV ou PROD
+git push origin development [OU] production
 ```
 
 O pipeline executa automaticamente:
@@ -224,7 +250,7 @@ O pipeline executa automaticamente:
 2. **Terraform Init** — inicializa o backend e baixa os providers
 3. **Terraform Apply** — provisiona a infraestrutura do ambiente correspondente
 
-Para destruir os recursos, acesse **Actions → Terraform Destroy** no GitHub e selecione o ambiente desejado (DEV ou PROD). O destroy é manual e intencional — não acontece por push.
+Para **destruir** os recursos, acesse **Actions → Terraform Destroy** no GitHub, selecione a branch (development ou production) o ambiente desejado (DEV ou PROD). O destroy é **manual** e **intencional** — não acontece por push.
 
 ---
 
