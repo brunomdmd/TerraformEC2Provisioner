@@ -412,4 +412,6 @@ Cria `N` instâncias EC2 com disco criptografado. Usado pelos módulos `ec2_priv
 
 ## Arquitetura Final V1
 Com a versão V1 desse projeto, essa será a arquitetura da infraestrutura provisionada:
+
+
 ![Arquitetura](ArquiteturaV1.png)
