@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket  = "terraform-awsstudybruno"
+    bucket  = "testebmd-tfstate"
     key     = "prod/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
@@ -73,14 +73,29 @@ module "security_group" {
   myip        = var.myip
 }
 
-module "ec2" {
+module "ec2_private" {
   source            = "../../modules/ec2"
   ami_id            = data.aws_ami.selected.id
   os_type           = var.os_type
-  instance_count    = var.instance_count
+  instance_count    = var.private_instance_count
+  instance_type     = var.instance_type
+  key_name          = var.key_name
+  subnet_id         = module.vpc.subnet_private_id
+  subnet_name       = "PRIVATE"
+  security_group_id = [module.security_group.security_group_id]
+  environment       = var.environment
+  service           = var.service
+}
+
+module "ec2_public" {
+  source            = "../../modules/ec2"
+  ami_id            = data.aws_ami.selected.id
+  os_type           = var.os_type
+  instance_count    = var.public_instance_count
   instance_type     = var.instance_type
   key_name          = var.key_name
   subnet_id         = module.vpc.subnet_public_id
+  subnet_name       = "PUBLIC"
   security_group_id = [module.security_group.security_group_id]
   environment       = var.environment
   service           = var.service

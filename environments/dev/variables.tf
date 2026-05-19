@@ -23,10 +23,16 @@ variable "os_type" {
   default     = "AMAZON_LINUX_2023"
   }
 
-variable "instance_count" {
-  description = "Número de instâncias EC2 no ambiente DEV"
+variable "private_instance_count" {
+  description = "Número de instâncias EC2 na subnet privada"
   type        = number
-  default     = 5
+  default     = 1
+}
+
+variable "public_instance_count" {
+  description = "Número de instâncias EC2 na subnet pública"
+  type        = number
+  default     = O
 }
 
 variable "instance_type" {
@@ -38,5 +44,5 @@ variable "instance_type" {
 variable "key_name" {
   description = "Nome do par de chaves SSH"
   type        = string
-  default     = "TERRAFORM-KEY"
+  default     = "TERRAFORM-KEY2"
 }

@@ -1,6 +1,6 @@
 # Terraform EC2 Provisioner
 
-Essa solução tem como objetivo permitir o provisionamento automatizado de instâncias EC2 na AWS, incluindo toda a infraestrutura necessária, como VPC, Subnets, Internet Gateway, Route Tables e Security Groups, utilizando módulos reutilizáveis por ambiente (DEV e PROD).
+Essa solução tem como objetivo permitir o provisionamento automatizado de instâncias EC2 na AWS, incluindo toda a infraestrutura necessária, como VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables e Security Groups, utilizando módulos reutilizáveis por ambiente (DEV e PROD).
 
 Dessa forma, é possível, através de um único projeto, realizar o deploy de uma infraestrutura completa, padronizada e escalável para diferentes ambientes. Além disso, a esteira de CI/CD pode ser integrada aos seus projetos, permitindo automatizar a construção e o provisionamento da infraestrutura necessária para suas aplicações de forma prática, segura e consistente.
 
@@ -30,7 +30,7 @@ Os módulos em `modules/` são reutilizáveis e não rodam sozinhos — o Terraf
 ### 1. Clone o repositório e crie as branches
 
 ```bash
-git clone https://github.com/SEU_USUARIO/TerraformEC2Provisioner.git
+git clone git@github.com:brunomdmd/TerraformEC2Provisioner.git
 
 cd TerraformEC2Provisioner
 
@@ -106,7 +106,15 @@ Para preparar a AWS para utilização dessa solução, é necessário criar um u
 				"ec2:DescribeImages",
 				"ec2:DescribeVpcs",
 				"ec2:DeleteSecurityGroup",
-				"ec2:MonitorInstances"        
+				"ec2:MonitorInstances",
+				"ec2:AllocateAddress",
+				"ec2:DescribeAddresses",
+				"ec2:DescribeAddressesAttribute",
+				"ec2:ReleaseAddress",
+				"ec2:CreateNatGateway",
+				"ec2:DescribeNatGateways",
+				"ec2:DeleteNatGateway",
+				"ec2:DisassociateAddress"
 			],
 			"Resource": "*"
 		},
@@ -132,9 +140,7 @@ Para preparar a AWS para utilização dessa solução, é necessário criar um u
 
 Agora, crie uma **Access Key** e selecione o caso de uso “Command Line Interface (CLI)”.
 
-Em seguida, copie os valores de **Access Key ID** e **Secret Access Key** e armazene-os em um local seguro, pois essas credenciais serão utilizadas posteriormente na criação dos Secrets do GitHub, permitindo a autenticação da pipeline CI/CD com a AWS.
-
-Além disso, você também deverá utilizar essas credenciais para configurar o acesso local à AWS através da AWS CLI e realizar a criação de recursos diretamente pelo terminal, executando o comando abaixo:
+Em seguida, copie os valores de **Access Key ID** e **Secret Access Key** e armazene-os em um local seguro, pois essas credenciais serão utilizadas posteriormente na criação dos Secrets do GitHub, permitindo a autenticação da pipeline CI/CD com a AWS. Além disso, você também deverá utilizar essas credenciais para configurar o acesso local à AWS através da AWS CLI e realizar a criação de recursos diretamente pelo terminal, executando o comando abaixo:
 
 ```bash
 aws configure
@@ -177,9 +183,6 @@ aws ec2 create-key-pair \
 
 chmod 400 NOME_DA_CHAVE.pem
 ```
-
-> **Importante:** A chave privada `.pem` é gerada **uma única vez**. A AWS não armazena a parte privada — guarde em lugar seguro.
-
 ---
 
 
@@ -219,9 +222,19 @@ As variáveis ficam nos arquivos `environments/dev/variables.tf` e `environments
 | `service` | Nome do serviço/projeto, usado nas tags dos recursos |
 | `myip` | Seu IP público em CIDR (ex: `1.2.3.4/32`) — libera acesso SSH/RDP apenas para você. Obtenha com `curl https://checkip.amazonaws.com` |
 | `os_type` | Sistema operacional das instâncias: `AMAZON_LINUX_2023`, `UBUNTU_22_04`, `UBUNTU_24_04`, `WINDOWS_2019` ou `WINDOWS_2022` |
-| `instance_count` | Quantidade de instâncias EC2 a subir no ambiente |
+| `private_instance_count` | Quantidade de instâncias EC2 na subnet privada (default: `1`) |
+| `public_instance_count` | Quantidade de instâncias EC2 na subnet pública (default: `0`) |
 | `instance_type` | Tipo da instância EC2 (ex: `t3.micro`). Deve ser arquitetura x86_64 |
 | `key_name` | Nome do Key Pair criado na etapa anterior |
+
+#### Dinâmica de subnets
+
+Ambos os ambientes (DEV e PROD) possuem dois módulos EC2 independentes — `ec2_private` e `ec2_public` — cada um fixo na sua respectiva subnet. Isso significa que é possível ter instâncias nas duas subnets simultaneamente, sem que uma interfira na outra.
+
+O controle é feito pelas variáveis `private_instance_count` e `public_instance_count`. Definir qualquer uma delas como `0` simplesmente não sobe instâncias naquela subnet — sem destruir as da outra.
+
+
+> Por padrão, `public_instance_count = 0` — nenhuma instância sobe na subnet pública a não ser que seja solicitado explicitamente.
 
 
 Depois configure o nome do bucket no backend para o ambiente que deseja subir:
@@ -300,20 +313,44 @@ terraform destroy
 
 ### Linux — SSH
 
-```bash
-# Pegue o IP público via output
-terraform output public_ip
+#### Instância pública (acesso direto)
 
-# Conecte com a chave .pem
-ssh -i NOME_DA_CHAVE.pem ec2-user@IP_DA_INSTANCIA
+```bash
+# Conecte diretamente
+ssh -i NOME_DA_CHAVE.pem ec2-user@IP_PUBLICO
 ```
+
+#### Instância privada (via bastion na subnet pública)
+
+As instâncias privadas não têm IP público. O acesso é feito usando a instância pública como bastion com **SSH Agent Forwarding** — a chave nunca precisa sair da sua máquina.
+
+```bash
+# 1. Inicie o agente SSH (se ainda não estiver rodando)
+eval $(ssh-agent -s)
+
+# 2. Adicione sua chave ao agente
+ssh-add NOME_DA_CHAVE.pem
+
+# 3. Conecte no bastion com -A (agent forwarding)
+ssh -A -i NOME_DA_CHAVE.pem ec2-user@IP_PUBLICO_BASTION
+
+# 4. De dentro do bastion, conecte na instância privada (sem especificar chave)
+ssh ec2-user@IP_PRIVADO
+```
+
 
 ### Windows — RDP
 
-```bash
-# Pegue o IP público
-terraform output public_ip
+#### Instância pública (acesso direto)
+> A senha só fica disponível por volta de 5 minutos após a criação da instância EC2. Se retornar vazio, aguarde e tente novamente.
 
+> Se receber `Unable to decrypt password data using provided private key file`, sua chave pode estar no formato OpenSSH. Converta antes:
+> ```bash
+> cp NOME_DA_CHAVE.pem NOME_DA_CHAVE.pem.bak
+> ssh-keygen -p -m PEM -f NOME_DA_CHAVE.pem
+> ```
+
+```bash
 # Descriptografe a senha de Administrator
 aws ec2 get-password-data \
   --instance-id i-XXXXXXXXXXXXXXXXX \
@@ -327,13 +364,10 @@ Conecte via RDP com:
 - **Usuário:** `Administrator`
 - **Senha:** valor retornado acima
 
-> A senha só fica disponível ~4 minutos após o boot. Se retornar vazio, aguarde e tente novamente.
+#### Instância privada (via bastion na subnet pública)
 
-> Se receber `Unable to decrypt password data using provided private key file`, sua chave pode estar no formato OpenSSH. Converta antes:
-> ```bash
-> cp NOME_DA_CHAVE.pem NOME_DA_CHAVE.pem.bak
-> ssh-keygen -p -m PEM -f NOME_DA_CHAVE.pem
-> ```
+As instâncias privadas não têm IP público. Acesse primeiro a instância pública via RDP e, de dentro dela, abra uma nova conexão RDP apontando para o IP privado da instância destino.
+
 
 ---
 
@@ -348,7 +382,10 @@ Cria a rede base do ambiente.
 | VPC | `VPC-{ambiente}` |
 | Subnet pública | `SUBNET_PUBL-{ambiente}` |
 | Subnet privada | `SUBNET_PRIV-{ambiente}` |
+| Route table pública | `RT-PUBLIC-{ambiente}` |
+| Route table privada | `RT-PRIVATE-{ambiente}` |
 | Internet Gateway | `IGW-{ambiente}` |
+| NAT Gateway | `NGW-{ambiente}` |
 
 **Outputs:** `vpc_id`, `subnet_public_id`, `subnet_private_id`, `aws_vpc_cidr_block`
 
@@ -356,13 +393,17 @@ Cria a rede base do ambiente.
 
 Cria um security group com acesso SSH/RDP liberado para o CIDR da VPC e para o seu IP (`myip`).
 
+| Recurso | Nome na AWS |
+|---|---|
+| Security Group | `SG-DEFAULT-{ambiente}` |
+
 **Outputs:** `security_group_id`
 
 ### `modules/ec2`
 
-Cria `N` instâncias EC2 na subnet pública com disco criptografado.
+Cria `N` instâncias EC2 com disco criptografado. Usado pelos módulos `ec2_private` e `ec2_public` de cada ambiente.
 
-- Nome das instâncias: `{OS_TYPE}-{ambiente}-001`, ex: `AMAZON_LINUX_2023-PROD-001`
+- Nome das instâncias: `{ambiente}-{OS_TYPE}-{PRIVATE|PUBLIC}-01`, ex: `PROD-AMAZON_LINUX_2023-PRIVATE-01`
 - AMI buscada automaticamente via data source com base no `os_type`
 
 **Outputs:** `public_ip[]`, `private_ip[]`, `instance_ids[]`, `instance_name[]`

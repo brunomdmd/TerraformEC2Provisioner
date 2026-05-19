@@ -23,10 +23,16 @@ variable "os_type" {
   default     = "AMAZON_LINUX_2023"
   }
 
-variable "instance_count" {
-  description = "Número de instâncias EC2 no ambiente PROD"
+variable "private_instance_count" {
+  description = "Número de instâncias EC2 na subnet privada"
   type        = number
-  default     = 2
+  default     = 1
+}
+
+variable "public_instance_count" {
+  description = "Número de instâncias EC2 na subnet pública"
+  type        = number
+  default     = 0
 }
 
 variable "instance_type" {

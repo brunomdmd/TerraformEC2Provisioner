@@ -7,8 +7,8 @@ variable "instance_count" {
   description = "Número de instâncias EC2 a criar"
   type        = number
   validation {
-    condition     = var.instance_count > 0
-    error_message = "O número de instâncias deve ser maior que 0."
+    condition     = var.instance_count >= 0
+    error_message = "O número de instâncias deve ser maior ou igual a 0."
   }
 }
 
@@ -24,6 +24,11 @@ variable "key_name" {
 
 variable "subnet_id" {
   description = "ID da subnet onde as instâncias serão criadas"
+  type        = string
+}
+
+variable "subnet_name" {
+  description = "Nome legível da subnet ('PRIVATE' ou 'PUBLIC'), usado no nome da instância"
   type        = string
 }
 
